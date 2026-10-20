@@ -68,7 +68,6 @@ class individuo {
 		
 		void show() { // Mostrar el array de si los productos fueron comprados o no.
 			for (int i = 0; i < 10; i++) cout << a[i] << " ";
-			cout << endl;
 		}
 		
 		int fitness(int c, int pe[10], int be[10]) { // Dar un coeficiente dependiendo si se pasa o no.
@@ -81,13 +80,55 @@ class individuo {
 				}
 			}
 			
-			if (p_sum < c) return b_sum;
+			if (p_sum <= c) return b_sum;
 			else return c - p_sum;
 		}
 		
-		// Seleccion
-		int seleccion() { 
-			return rand() % 100;
+		// Seleccion (que tenga en cuenta el mejor fitness)
+		int seleccion(individuo pob[2][100], int idx, int c, int p[10], int b[10]) { 
+			// Probabilidades descritas por (n + 1)/(100) siendo n el idx de el individuo en el orden de fitness
+			// Se tira una probabilidad entre 0 y 1 (ej: 0.47625) y el individuo que sea capaz de superar ese numero en cuestion de probabilidad sera el seleccionado
+			
+			int orden[3][100];
+			int ok = 0;
+			int aux;
+			
+			// Guardar todo para despues ordenar
+			for (int i = 0; i < 100; i++) {
+				// Se usa 0 para los fitness y 1 para el idx original para hacer el cruce.
+				orden[0][i] = pob[idx][i].fitness(c, p, b);
+			}
+			
+			// Ordenar
+			do {
+				// Asumo que está ordenado
+				ok = 1;
+				for (int j = 0; j < 99; j++) {
+					if (orden[0][j] > orden[0][j + 1]) {
+						ok = 0; // No está ordenado
+						
+						// Swap fitness
+						aux = orden[0][j + 1];
+						orden[0][j + 1] = orden[0][j];
+						orden[0][j] = aux;
+						
+						// Swap index
+						aux = orden[1][j + 1];
+						orden[1][j + 1] = orden[1][j];
+						orden[1][j] = aux;
+					}
+				}
+			} while (ok == 0); // Mientras no está ordenado.
+			
+			for (int k = 0; k < 100; k++) {
+				// Asignar probabilidades a cada uno.
+				orden[3][k] = (k + 1)/(100);
+			}
+			
+			// Generar numero flotante 0 y 1
+			float s = rand() % 32767;
+			
+			
 		}
 		
 		// Cruce, de manera aleatoria se mira todos menos el mismo.
@@ -110,43 +151,48 @@ class individuo {
 		}
 };
 
+void mostrarPoblacion(individuo pob[2][100], int idx, int c, int p[10], int b[10]) {
+	cout << "| N° | Genes | Fitness |" << endl;
+	for (int k = 0; k < 100; k++) {
+		cout << " | " << k << " | ";
+		pob[idx][k].show(); cout << " | ";
+		cout << pob[idx][k].fitness(c, p, b) << " | " << endl;
+	}
+}
+
 int main(void) {
 	srand(time(0));
-	individuo chamos[2][100];
-	int chamo_act = 0;
+	individuo poblacion[2][100];
+	int era = 0, act = 0;
 	
 	int c = 50;
-	int p[10] = {10, 8, 3, 5, 8, 3, 7, 3, 5, 1};
+	int p[10] = {20, 16, 6, 10, 16, 6, 14, 6, 10, 2};
 	int b[10] = {50, 70, 55, 100, 30, 40, 50, 25, 90, 20};
 	
+	// Generación 0
 	for (int i = 0; i < 100; i++) {
-		chamos[chamo_act][i].compra();
+		poblacion[act][i].compra();
 	}
 	
-	// Generacion de nueva poblacion
-	for (int i = 0; i < 100; i++) {
-		int selec = chamos[chamo_act][i].seleccion();
-		
-		chamos[(chamo_act + 1) % 2][i] = chamos[chamo_act][i].cruce(chamos[chamo_act][selec]);
+	// Generación de n generaciones.
+	for (era = 0; era < 10; era++) {
+	    int sig = (act + 1) % 2; // Índice de la siguiente población
+	    
+	    // Generar nueva población a partir de la actual
+	    for (int i = 0; i < 100; i++) {
+	        int selec = poblacion[act][i].seleccion(poblacion[act][i], act, c, p, b);
+	        
+	        // Guardar el hijo en la población SIGUIENTE (sig)
+	        poblacion[sig][i] = poblacion[act][i].cruce(poblacion[act][selec]);
+	    }
+	    
+	    // Mostrar la población recién generada
+	    cout << "Poblacion N" << era << endl;
+	    mostrarPoblacion(poblacion, sig, c, p, b);
+	    
+	    // Cambiar de índice activo para la siguiente iteración
+	    act = sig;
 	}
-	
-	for (int j = 0; j < 2; j++) {
-		cout << "Poblacion: " << j << endl;
- 		for (int k = 0; k < 100; k++) {
-			cout << "Tipo: " << k << endl;
-			chamos[j][k].show();
-		}
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	

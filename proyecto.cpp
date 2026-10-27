@@ -66,6 +66,10 @@ class Punto3d: public Punto2d { // public, el modo generico donde se le asigna e
 * Sea S el espacio donde viven los tours, la estrategia a seguir será , partir de un s E S aleatorio y realizar una caminata.
 s - > S_0, S_1, S_2, ..., S_M, tal que Costo(S_i+1) < Costo(S_i).
 
+* Algoritmos recomendados / Ideas
+1. Siempre iniciar por el "nodo" 1 y elegir siempre el menor próximo, es decir si 8 y 3 están cerca, iría por el 3.
+2. Apenas se cree el "camino", quitar 2 arcos y sustituirlos y probar combinacion, para en caso de que sea mejor (es decir, tenga menor recorrido) se cambie.
+
 */
 
 int main(void) {
